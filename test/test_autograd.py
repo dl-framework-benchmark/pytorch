@@ -323,6 +323,13 @@ class TestAutograd(TestCase):
         self.assertEqual(x.grad.data, x_grad)
         self.assertEqual(y.grad.data, y_grad)
 
+        # Test that grad_outputs and outputs have the same shape
+        with self.assertRaisesRegex(RuntimeError,
+            'grad_outputs and outputs do not have the same shape'):
+                torch.autograd.grad(
+                    outputs=[grad_sum], grad_outputs=[torch.ones(5)],
+                    inputs=[x], create_graph=True)
+
     def test_grad_nonleaf(self):
         x_init = torch.randn(2, 2, requires_grad=True)
         x = x_init

@@ -133,12 +133,18 @@ def grad(outputs, inputs, grad_outputs=None, retain_graph=None, create_graph=Fal
 
     outputs = (outputs,) if isinstance(outputs, torch.Tensor) else tuple(outputs)
     inputs = (inputs,) if isinstance(inputs, torch.Tensor) else tuple(inputs)
+
     if grad_outputs is None:
         grad_outputs = [None] * len(outputs)
-    elif isinstance(grad_outputs, torch.Tensor):
-        grad_outputs = [grad_outputs]
     else:
-        grad_outputs = list(grad_outputs)
+        if isinstance(grad_outputs, torch.Tensor):
+            grad_outputs = [grad_outputs]
+        else:
+            grad_outputs = list(grad_outputs)
+
+        for out, grad in zip(outputs, grad_outputs):
+            if not out.shape == grad.shape:
+                raise RuntimeError("grad_outputs and outputs do not have the same shape")
 
     grad_outputs = _make_grads(outputs, grad_outputs)
     if retain_graph is None:
@@ -170,7 +176,6 @@ def _is_checkpoint_valid():
 def variable(*args, **kwargs):
     warnings.warn("torch.autograd.variable(...) is deprecated, use torch.tensor(...) instead")
     return torch.tensor(*args, **kwargs)
-
 
 if not torch._C._autograd_init():
     raise RuntimeError("autograd initialization failed")
