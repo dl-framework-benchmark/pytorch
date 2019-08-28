@@ -324,8 +324,7 @@ class TestAutograd(TestCase):
         self.assertEqual(y.grad.data, y_grad)
 
         # Test that grad_outputs and outputs have the same shape
-        with self.assertRaisesRegex(RuntimeError,
-                'grad_outputs and outputs do not have the same shape'):
+        with self.assertRaisesRegex(RuntimeError, 'grad_outputs and outputs do not have the same shape'):
             torch.autograd.grad(
                 outputs=[grad_sum], grad_outputs=[torch.ones(5)],
                 inputs=[x], create_graph=True)
