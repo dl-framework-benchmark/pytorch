@@ -21,6 +21,8 @@ def _make_grads(outputs, grads):
     new_grads = []
     for out, grad in zip(outputs, grads):
         if isinstance(grad, torch.Tensor):
+            if not out.shape == grad.shape:
+                raise RuntimeError("grad_outputs and outputs do not have the same shape")
             new_grads.append(grad)
         elif grad is None:
             if out.requires_grad:
@@ -136,17 +138,13 @@ def grad(outputs, inputs, grad_outputs=None, retain_graph=None, create_graph=Fal
 
     if grad_outputs is None:
         grad_outputs = [None] * len(outputs)
+    elif isinstance(grad_outputs, torch.Tensor):
+        grad_outputs = [grad_outputs]
     else:
-        if isinstance(grad_outputs, torch.Tensor):
-            grad_outputs = [grad_outputs]
-        else:
-            grad_outputs = list(grad_outputs)
-
-        for out, grad in zip(outputs, grad_outputs):
-            if not out.shape == grad.shape:
-                raise RuntimeError("grad_outputs and outputs do not have the same shape")
+        grad_outputs = list(grad_outputs)
 
     grad_outputs = _make_grads(outputs, grad_outputs)
+
     if retain_graph is None:
         retain_graph = create_graph
 
